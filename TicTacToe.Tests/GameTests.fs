@@ -26,18 +26,21 @@ module GameTests =
       testList "Domain" [
         testProperty "Other player is not equal to player" <| fun x ->
           x <> Player.other x
+          
         testProperty "Other player of other player is the player itself" <| fun x ->
           x = Player.other (Player.other x)
 
         test "Initial state has 0 moves done" {
             Expect.equal Game.initialState.MovesDone.Length 0 "MovesDone should be empty"
         }
+
         test "Initial state has 3x3 possible moves" {
             let possibleMovesByX = Game.initialState.PossibleMoves |> List.filter (fun m -> m.By = X)
             let possibleMovesByO = Game.initialState.PossibleMoves |> List.filter (fun m -> m.By = O)
             Expect.equal possibleMovesByX.Length (3*3) "Possible moves by X should be 9"
             Expect.isEmpty possibleMovesByO "There should be no Possible moves by O"
         }
+
         test "Initial state possible moves are all different" {
             let distinctMoves = Game.initialState.PossibleMoves |> List.distinct
             Expect.equal distinctMoves Game.initialState.PossibleMoves "Possible moves are distinct"

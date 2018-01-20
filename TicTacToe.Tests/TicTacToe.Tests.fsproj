@@ -14,6 +14,7 @@
     <Compile Include="Gen.fs" />
     <Compile Include="GameTests.fs" />
     <Compile Include="ScoringTests.fs" />
+    <Compile Include="BotTests.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>  
 

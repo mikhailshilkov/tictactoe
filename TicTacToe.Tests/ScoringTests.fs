@@ -27,4 +27,38 @@ module ScoringTests =
             Expect.isLessThanOrEqual score1 score2 "Bigger duration has lower score (or same)"
           else
             Expect.isLessThanOrEqual score2 score1 "Bigger duration has lower score (or same)"
+
+        test "Leaderboard calculates top N entries" {
+            let entries = [
+              ("Carol", 100)
+              ("Alice", 333)
+              ("Eve", 10)
+              ("Bob", 101)
+              ("Dave", 99)
+            ]
+            let actual = Scoring.calculateLeaderboard 3 entries |> List.ofSeq
+            let expected = [
+              { Index = 1; Name = "Alice"; Score = 333 }
+              { Index = 2; Name = "Bob"; Score = 101 }
+              { Index = 3; Name = "Carol"; Score = 100 }
+            ]
+            Expect.equal actual expected "Leaderboard should match"
+        }
+            
+        test "Leaderboard ignores empty names and non-positive scores" {
+            let entries = [
+              ("Carol", -100)
+              ("", 222)
+              ("Alice", 333)
+              (null, 500)
+              ("Bob", 101)
+              ("Dave", 0)
+            ]
+            let actual = Scoring.calculateLeaderboard 3 entries |> List.ofSeq
+            let expected = [
+              { Index = 1; Name = "Alice"; Score = 333 }
+              { Index = 2; Name = "Bob"; Score = 101 }
+            ]
+            Expect.equal actual expected "Leaderboard should match"
+        }
       ]

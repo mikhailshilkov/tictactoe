@@ -7,8 +7,7 @@ module Gen =
     type Positive = Positive of float
     let positive() =
       Arb.generate<float>
-      |> Gen.filter (fun x -> x <> 0.0 && x < 100000.0 && x <> infinity && x <> -infinity)
-      |> Gen.map (fun x -> if (x < 0.0) then -x else x)
+      |> Gen.filter (fun x -> x > 0.1 && x < 100000.0 && x <> infinity && x <> -infinity)
       |> Arb.fromGen
       |> Arb.convert Positive (fun (Positive l) -> l)
         
