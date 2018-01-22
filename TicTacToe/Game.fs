@@ -62,7 +62,7 @@ module Game =
     | None ->
       let possibleMoves = 
         List.except [move] game.PossibleMoves
-        |> List.map (fun move -> { move with By = Player.other move.By })
+        |> List.map (fun m -> { m with By = Player.other m.By })
       InProgress { MovesDone = movesDone; PossibleMoves = possibleMoves }
 
   let makeRound player1 player2 gameState =
