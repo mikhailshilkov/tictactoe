@@ -30,13 +30,14 @@ module Functions =
   [<FunctionName("Start")>]
   let start([<HttpTrigger(AuthorizationLevel.Anonymous, "POST", Route = "game")>] req: GameRequest,
             [<Table("TicTacToe")>] store: ICollector<GameEntity>) =
-    let state = Game.initialState |> InProgress
     let gameid = Guid.NewGuid().ToString()
-    store.Add(GameEntity(PartitionKey = "default", RowKey = gameid, Name = req.Name, State = (JsonConvert.SerializeObject state)))
+    let state = InProgress Game.initialState
+    let serializedState = JsonConvert.SerializeObject state
+    store.Add(GameEntity(PartitionKey = "default", RowKey = gameid, Name = req.Name, State = serializedState))
     ObjectResult(Api.serialize gameid state 0)
 
   [<FunctionName("Play")>]
-  let play([<HttpTrigger(AuthorizationLevel.Anonymous, "POST", Route = "game/{gameid}/{index}")>] req: HttpRequest, 
+  let play([<HttpTrigger(AuthorizationLevel.Anonymous, "POST", Route = "game/{gameid}/move/{index}")>] req: HttpRequest, 
            gameid: string, index: int,
            [<Table("TicTacToe", "default", "{gameid}")>] entity: GameEntity) =
     let state = JsonConvert.DeserializeObject<GameState> entity.State

@@ -13,8 +13,8 @@ module Scoring =
   let calculateScore duration (state: GameState) =
     let durationScore = (100.0 * (1.0 - duration / (duration + 10000.0))) |> int
     match state with
-    | Finished (Won X, ms) -> (11 - ms.Length) * 100 + durationScore
-    | Finished (Tie, _) -> durationScore
+    | Finished { Outcome = Won X; MovesDone = ms } -> (11 - ms.Length) * 100 + durationScore
+    | Finished { Outcome = Tie } -> durationScore
     | _ -> 0
 
   let calculateLeaderboard top ns =

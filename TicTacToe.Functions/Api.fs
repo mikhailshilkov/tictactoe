@@ -19,30 +19,33 @@ module Api =
     Href: string
   }
  
-  type MoveResult = {
+  type GameDTO = {
+    Id: string
     Result: string
-    Position: Cell list
+    BusyCells: Cell list
     Links: Link list
     Score: int
   }
 
   let serialize gameid (state: GameState) score =
-    let index = function | Left -> 1 | Middle -> 2 | Right -> 3
+    let index = function | One -> 1 | Two -> 2 | Three -> 3
     let mapMove move = { Name = sprintf "x%iy%i" (index move.X) (index move.Y); Value = move.By.ToString() }
-    let mapLink i move = { Rel = sprintf "x%iy%i" (index move.X) (index move.Y); Href = sprintf "http://localhost:7071/api/game/%s/%i" gameid i }
+    let mapLink i move = { Rel = sprintf "x%iy%i" (index move.X) (index move.Y); Href = sprintf "/game/%s/move/%i" gameid i }
     match state with
     | InProgress progress ->
-      { Position = progress.MovesDone |> List.map mapMove
+      { Id = gameid
+        BusyCells = progress.MovesDone |> List.map mapMove
         Links = progress.PossibleMoves |> List.mapi mapLink
         Result = null
         Score = score }
-    | Finished (r, ms) ->
+    | Finished f ->
       let result =
-        match r with
+        match f.Outcome with
         | Tie -> "Tie"
         | Won X -> "You Win!"
         | Won O -> "You Loose!"
-      { Position = List.map mapMove ms
+      { Id = gameid
+        BusyCells = List.map mapMove f.MovesDone
         Links = []
         Result = result
         Score = score }

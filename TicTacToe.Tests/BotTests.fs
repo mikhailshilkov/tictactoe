@@ -14,6 +14,5 @@ module BotTests =
             match s with
             | InProgress p -> Game.makeRound (human i p) Bot.pickMove p
             | _ -> s
-          let r = List.fold round (InProgress Game.initialState) xs
-          ()
+          List.fold round (InProgress Game.initialState) xs |> ignore     
       ]

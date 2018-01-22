@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Tic Tac Toe</title>
+    <style type="text/css">
+html {
+  font-family: "Courier New";
+  background: black;
+  color: green;
+  font-size: 14pt;
+}
+
+input, input:focus {
+  font-family: "Courier New";
+  background: black;
+  color: white;
+  font-size: 14pt;
+  border: 1px solid green;
+  padding: 2px 5px 2px 5px;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+table {
+	border-collapse:collapse;
+}
+
+td {
+	background-color: #CCCCCC;
+	border: 3px solid black;
+	font-size:90px;
+}
+
+.X {
+	color:green;
+}
+
+.O {
+        color: red;
+}
+
+.button {
+  cursor: pointer;
+  padding: 5px;
+  font-size: 20pt;
+  margin: 0;
+  margin-left: -10px;
+}
+
+.column {
+    float: left;
+    width: 50%;
+}
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+.score {
+    font-weight: bold;
+}
+.center {
+    margin: auto;
+    width: 360px;
+    padding: 10px;
+}
+    </style>
+  </head>
+<body>
+  <div id="welcome">
+    <h2>Welcome to Tic-Tac-Toe!</h2>
+    <form id="form">
+      <input id="name" type="text" name="field1" placeholder="Your Name" style="width: 500px" />
+      <div class="button" onclick="startNewGame()">[Start]</div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="column">
+      <div id="tictactoe" class="center" style="display: none">
+      </div>
+    </div>
+    <div id="summary" class="column" style="display: none">
+      <h2 id="result">You win!</h2>
+      <div style="margin-bottom: 15px">Your score is&nbsp;<span id="score" class="score">1</span></div>
+      <div onclick="startNewGame()" class="button">[Play again]</div>
+      <div>
+        <h3>Leaderboard</h3>
+        <div id="leaderboard">
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+var N_SIZE = 3,
+  EMPTY = '&nbsp;',
+  links = [];
+
+function init() {
+  var board = document.createElement('table');
+  board.setAttribute('border', 1);
+  board.setAttribute('cellspacing', 0);
+
+  for (var i = 1; i <= N_SIZE; i++) {
+    var row = document.createElement('tr');
+    board.appendChild(row);
+    for (var j = 1; j <= N_SIZE; j++) {
+      var cell = document.createElement('td');
+      cell.setAttribute('height', 120);
+      cell.setAttribute('width', 120);
+      cell.setAttribute('align', 'center');
+      cell.setAttribute('valign', 'center');
+      cell.setAttribute('id', 'x' + j + 'y' + i);
+      cell.addEventListener('click', set);
+      cell.innerHTML = EMPTY;
+      row.appendChild(cell);
+    }
+  }
+
+  document.getElementById('tictactoe').appendChild(board);
+}
+
+function render(r) {
+  for (var i = 1; i <= N_SIZE; i++) {
+    for (var j = 1; j <= N_SIZE; j++) {
+      document.getElementById('x' + i + 'y' + j).innerHTML = EMPTY;
+    }
+  }
+  for (let pos of r.busyCells) {
+    document.getElementById(pos.name).innerHTML = pos.value;
+    document.getElementById(pos.name).className = pos.value;
+  }
+  if (r.result) {
+    links = [];
+    document.getElementById('result').innerHTML = r.result;
+    document.getElementById('score').innerHTML = r.score;
+    show('summary');
+    fetch('leaderboard')
+      .then(response => response.json())
+      .then(r => {
+        var leaderboard = document.getElementById('leaderboard');
+        leaderboard.innerHTML = "";
+        for (let line of r) {
+          var row = document.createElement('div');
+          row.innerHTML = line.index + '. ' + line.name + ': ' + line.score;
+          leaderboard.appendChild(row);
+        }
+      });
+  } else {
+    links = r.links;
+  }
+}
+
+function show(id) {
+  document.getElementById(id).style.display = '';
+}
+function hide(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function startNewGame() {
+  hide('welcome');
+  hide('summary');
+  show('tictactoe');
+
+  const payload = {
+    name: document.getElementById('name').value
+  };
+
+  fetch('game', { method: 'POST', body: JSON.stringify(payload) })
+    .then(response => response.json())
+    .then(r => render(r));
+}
+
+function set() {
+  if (this.innerHTML !== EMPTY) {
+    return;
+  }
+  let action = links.find(l => l.rel === this.id);
+  if (!action) {
+    return;
+  }
+  this.innerHTML = 'X';
+  fetch(action.href, { method: 'POST' })
+    .then(response => response.json())
+    .then(r => render(r));
+}
+
+init();
+    </script>
+</body>
+</html>

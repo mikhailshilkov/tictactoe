@@ -5,7 +5,7 @@ type Player = X | O
 module Player =
   let other = function | X -> O | O -> X
 
-type Position = Left | Middle | Right
+type Position = One | Two | Three
 
 type Move = {
   X: Position
@@ -13,20 +13,25 @@ type Move = {
   By: Player
 }
 
-type Progress = {
+type RunningGame = {
   MovesDone: Move list
   PossibleMoves: Move list
 }
 
-type GameResult = Won of Player | Tie
+type GameOutcome = Won of Player | Tie
+
+type FinishedGame = {
+  MovesDone: Move list
+  Outcome: GameOutcome
+}
 
 type GameState = 
-  | Finished of GameResult * Move list
-  | InProgress of Progress
+  | Finished of FinishedGame
+  | InProgress of RunningGame
 
 module Game =
   let initialState = 
-    let positions = [Left; Middle; Right]
+    let positions = [One; Two; Three]
     let cells = seq { 
       for x in positions do
          for y in positions do
@@ -38,22 +43,22 @@ module Game =
     let playerWon player = 
       let hisMoves = history |> List.filter (fun m -> m.By = player)
       let hasCell x y = List.exists (fun m -> m.X = x && m.Y = y) hisMoves
-      let hasRow i = hasCell Left i && hasCell Middle i && hasCell Right i
-      let hasColumn i = hasCell i Left && hasCell i Middle && hasCell i Right
-      let hasLeftDiagonal = hasCell Left Left && hasCell Middle Middle && hasCell Right Right
-      let hasRightDiagonal = hasCell Right Left && hasCell Middle Middle && hasCell Left Right
-      hasRow Left || hasRow Middle || hasRow Right
-      || hasColumn Left || hasColumn Middle || hasColumn Right
+      let hasRow i = hasCell One i && hasCell Two i && hasCell Three i
+      let hasColumn i = hasCell i One && hasCell i Two && hasCell i Three
+      let hasLeftDiagonal = hasCell One One && hasCell Two Two && hasCell Three Three
+      let hasRightDiagonal = hasCell Three One && hasCell Two Two && hasCell One Three
+      hasRow One || hasRow Two || hasRow Three
+      || hasColumn One || hasColumn Two || hasColumn Three
       || hasLeftDiagonal || hasRightDiagonal
     if playerWon X then Some(Won X)
     elif playerWon O then Some(Won O)
     elif List.length history = 9 then Some Tie
     else None
 
-  let makeMove (game: Progress) (move: Move) =
+  let makeMove (game: RunningGame) (move: Move): GameState =
     let movesDone = move :: game.MovesDone
     match evaluate movesDone with
-    | Some result -> Finished (result, movesDone)
+    | Some result -> Finished { MovesDone = movesDone; Outcome = result }
     | None ->
       let possibleMoves = 
         List.except [move] game.PossibleMoves
@@ -65,4 +70,6 @@ module Game =
     match newGameState with
     | Finished _ -> newGameState
     | InProgress p -> player2 p |> makeMove p
+
+  let isFinished = function | Finished _ -> true | _ -> false
   
